@@ -17,5 +17,5 @@ El presente documento tiene como finalidad explicar cómo debe implementarse la 
 ### 3) Carpeta Swaggers:
 En esta carpera se encuentra los swaggers de las APIs en formato ".yaml". Tambien puedes acceder en linea a la API de Billetera a Administrador o la API de Administrador a Billetera
 
-[Billetera a Administrador](https://ipnewpay.github.io/Billeteras/#/)
-[Administrador a Billetera](https://ipnewpay.github.io/Billeteras/#/)
+[Billetera a Administrador](https://ipnewpay.github.io/Billeteras/BilleterasParaADM.html)
+[Administrador a Billetera](https://ipnewpay.github.io/Billeteras/)
