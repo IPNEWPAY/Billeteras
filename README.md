@@ -15,7 +15,9 @@ El presente documento tiene como finalidad explicar a alto nivel cómo funciona 
 El presente documento tiene como finalidad explicar cómo debe implementarse la autenticación en los distintos servicios entre la Billetera y el Administrador.
 
 ### 3) Carpeta Swaggers:
-En esta carpera se encuentra los swaggers de las APIs en formato ".yaml". Tambien puedes acceder en linea a la API de Billetera a Administrador o la API de Administrador a Billetera
+En esta carpera se encuentra los swaggers de las APIs en formato ".yaml". 
 
-[Billetera a Administrador](https://ipnewpay.github.io/Billeteras/BilleterasParaADM.html)
-[Administrador a Billetera](https://ipnewpay.github.io/Billeteras/)
+Tambien puedes acceder en linea a las APIs:
+*[Administrador a Billetera](https://ipnewpay.github.io/Billeteras/)
+*[Billetera a Administrador](https://ipnewpay.github.io/Billeteras/BilleterasParaADM.html)
+
