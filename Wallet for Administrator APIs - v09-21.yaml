@@ -1,0 +1,406 @@
+openapi: 3.0.1
+info:
+  title: Wallets for Administrator APIs
+  version: 1.0.0
+security:
+  - walletBearerAuth: []
+servers:
+- url: /
+paths:
+
+  /example_wallet/v1/webhook-notification:
+    post:
+      tags:
+        - Wallet APIs
+      summary: Notificación webhook enviada por el Administrador hacia la billetera para notificar cambios de estado de un pago
+      security:
+      - walletBearerAuth: []
+      description: ACLARACION! Esta URL es un ejemplo de como enviarle a la billetera una notificación webhook. Referirse a sección CALLBACK de la API del administrador
+      requestBody:
+        description: Estructura de notification de transaccion
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/instant_payment_notifications'
+            examples:
+              transaction_completed_approved:
+                value:
+                  date_created: '2021-04-19T21:28:38.400Z'
+                  id: 123456789
+                  action: TRANSFER.COMPLETED
+                  live_mode: true
+                  api_version: 1
+                  type: TRANSFER
+                  data:
+                    qr_id: 7f3ae4c2-e00f-4b85-8a08-94764b9f63ff
+                    amount:
+                      value: 100.25
+                      currency: ARS
+                    merchant:
+                      soft_descriptor: string
+                      cuit: 3333333333
+                    payer:
+                      name: Juan Perez
+                      document:
+                        type: DNI
+                        number: '3312345659'
+                      identification_number: '20387488291'
+                      wallet:
+                        name: MODO
+                        cuit: 3333333333
+                    transaction:
+                      authorization_code: '123'
+                      code: APPROVED
+                      description: 'Aprobada'
+                      datetime: '2021-04-19T21:28:38.400Z'
+                      type: CCT
+                      gross_amount:
+                        value: 100.25
+                        currency: ARS
+              transaction_completed_rejected:
+                value:  
+                  date_created: '2021-04-19T21:28:38.400Z'
+                  id: 123456789
+                  action: TRANSFER.COMPLETED
+                  live_mode: true
+                  api_version: 1
+                  type: TRANSFER
+                  data:
+                    qr_id: 7f3ae4c2-e00f-4b85-8a08-94764b9f63ff
+                    amount:
+                      value: 100.25
+                      currency: ARS
+                    merchant:
+                      soft_descriptor: string
+                      cuit: 3333333333
+                    payer:
+                      name: Juan Perez
+                      document:
+                        type: DNI
+                        number: '3312345659'
+                      identification_number: '20387488291'
+                      wallet:
+                        name: MODO
+                        cuit: 3333333333
+                    transaction:
+                      authorization_code: '123'
+                      code: REJECTED
+                      description: Rechazada
+                      on_rejection:
+                        code: INSSUFICIENT_FUNDS
+                        description: Fondos insuficientes
+                      datetime: '2021-04-19T21:28:38.400Z'
+                      type: CCT
+              refund_completed_approved:
+                value:
+                  date_created: '2021-04-19T21:28:38.400Z'
+                  id: 123456789
+                  action: REFUND.COMPLETED
+                  live_mode: true
+                  api_version: 1
+                  type: REFUND
+                  data:
+                    qr_id: 7f3ae4c2-e00f-4b85-8a08-94764b9f63ff
+                    amount:
+                      value: 100.25
+                      currency: ARS
+                    balance:
+                      value: 100.25
+                      currency: ARS
+                    merchant:
+                      soft_descriptor: string
+                      cuit: 3333333333
+                    payer:
+                      name: Juan Perez
+                      document:
+                        type: DNI
+                        number: '3312345659'
+                      identification_number: '20387488291'
+                      wallet:
+                        name: MODO
+                        cuit: 3333333333
+                    transaction:
+                      authorization_code: '123'
+                      code: APPROVED
+                      description: 'Aprobada'
+                      datetime: '2021-04-19T21:28:38.400Z'
+                      type: CCT
+                      gross_amount:
+                        value: 100.25
+                        currency: ARS
+        required: true
+      responses:
+        200:
+          description: Consulta exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/notifications_response'
+        400:
+          description: Bad request. Envío de parámetros incorrectos en el request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        401:
+          description: Apikey no valida o token vencido o no valido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        403:
+          description: Operacion no autorizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        404:
+          description: Operacion no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        408:
+          description: Tiempo de espera agotado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        500:
+          description: Error interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+      x-codegen-request-body-name: notification
+
+components:
+  schemas:
+    instant_payment_notification_details:
+      description: QR_ID details
+      required:
+      - qr_id
+      - amount
+      - merchant
+      - payer
+      type: object
+      properties:
+        qr_id:
+          type: string
+          description: QR Unique identifier for a payment
+          example: "7f3ae4c2-e00f-4b85-8a08-94764b9f63ff"
+        amount:
+          $ref: '#/components/schemas/amounts'
+        balance:
+          $ref: '#/components/schemas/amounts'
+        merchant:
+          $ref: '#/components/schemas/public_merchants'
+        payer:
+          $ref: '#/components/schemas/public_payers'
+        transaction:
+          $ref: '#/components/schemas/transaction_details'
+    instant_payment_notifications:
+      description: Objeto de notificacion webhook
+      required:
+      - date_created
+      - action
+      - merchant
+      - payer
+      - id
+      - type
+      - live_mode
+      type: object
+      properties:
+        date_created:
+          type: string
+          description: Fecha y Hora de la notificación
+          format: date-time
+        id:
+          type: string
+          description: Identificador del evento
+          example: "123456789"
+        action:
+          type: string
+          description: Estado de la transacción
+          enum:
+          - TRANSFER.COMPLETED
+          - REFUND.COMPLETED
+        type:
+          type: string
+          description: Tipo de transacción asociada al evento
+          enum:
+          - TRANSFER
+          - REFUND
+        live_mode:
+          type: boolean
+          description: Ambiente
+        api_version:
+          type: string
+          description: Version de la API
+        data:
+          $ref: '#/components/schemas/instant_payment_notification_details'
+    transaction_details:
+      allOf:
+        - $ref: '#/components/schemas/wallet_transaction_details'
+        - type: object
+    notifications_response:
+      required:
+      - qr_id
+      type: object
+      properties:
+        qr_id:
+          type: string
+          description: Identificador unívoco del QR      
+    public_payers:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Payer full name
+          example: Juan Perez
+        document:
+          $ref: '#/components/schemas/documents'
+        identification_number:
+          type: string
+          description: Identification number - CUIT (without hyphens).
+          minLength: 11
+          maxLength: 11  
+        wallet:
+          required:
+          - cuit
+          - name
+          type: object
+          properties:
+            name:
+              type: string
+              description: Namfe of the wallet
+              example: MODO
+            cuit:
+              $ref: '#/components/schemas/cuit'              
+    public_merchants:
+      required:
+      - cuit
+      - soft_descriptor
+      type: object
+      properties:
+        soft_descriptor:
+          type: string
+          description: Name of the merchant
+        cuit:
+          $ref: '#/components/schemas/cuit'
+      description: Detail of the Merchant              
+    amounts:
+      required:
+      - currency
+      - value
+      type: object
+      properties:
+        value:
+          type: number
+          description: Amount.
+          format: currency
+          example: 100.25
+        currency:
+          type: string
+          description: Currency of the Payment.
+          enum:
+          - ARS
+          - USD      
+    documents:
+      type: object
+      required:
+      - type
+      - number
+      properties:
+        type:
+          type: string
+          description: Document type
+          enum:
+            - DNI
+            - LC
+            - LE
+            - CDI
+        number:
+          type: string
+          description: Document number
+          example: "3312345659"
+    wallet_transaction_details:
+      required:
+      - authorization_code
+      - code
+      - datetime
+      - description
+      - gross_amount
+      - type
+      type: object
+      properties:
+        authorization_code:
+          type: string
+          description: Authorization code sent to The financials Institutions involved in the transaction.
+        code:
+          $ref: '#/components/schemas/response_status'
+        description:
+          type: string
+          description: Description of the status code.
+        on_rejection:
+          required:
+          - code
+          - description
+          type: object
+          properties:
+            code:
+              type: string
+              description: Code of rejection.
+            description:
+              type: string
+              description: Description of the rejection.
+          description: Detailed information about the rejection (only if the transaction is REJECTED)
+        datetime:
+          type: string
+          description: Date and time of the transaction.
+          format: date-time
+        type:
+          type: string
+          description: Transaction type (CCT, PCT, DCT, ECT).
+          enum:
+          - CCT
+          - PCT
+          - ECT
+        gross_amount:
+          $ref: '#/components/schemas/amounts'                    
+    cuit:
+      maxLength: 11
+      minLength: 11
+      type: string
+      description: Identification number - CUIT (without hyphens).
+      example: 22333333339
+    errors:
+      required:
+      - errors
+      type: object
+      properties:
+        errors:
+          minItems: 1
+          type: array
+          items:
+            required:
+            - description
+            type: object
+            properties:
+              code:
+                type: string
+                description: Error code
+              description:
+                type: string
+                description: Description of the error code
+    response_status:
+      type: string
+      description: Response code of the payment
+      enum:
+      - APPROVED
+      - REJECTED
+  securitySchemes:
+    walletBearerAuth:
+      type: http
+      scheme: bearer
+      description: "This API supports the client_credentials flow. You can obtain it by issuing a HTTP POST '/example_acquirer/v1/oauth/token' --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'grant_type=client_credentials' --data-urlencode 'YOUR_CLIENT_ID' --data-urlencode 'client_secret=YOUR_CLIENT_SECRET' --data-urlencode 'scope=read'" 
