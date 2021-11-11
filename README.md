@@ -8,10 +8,10 @@
 
 
 ## Documentación
-### 1) Archivo: *Documentación para Billeteras*:
+### 1) Archivo: *[Documentación para Billeteras](https://github.com/IPNEWPAY/Billeteras/blob/main/Documentaci%C3%B3n%20para%20Billeteras%20v1.2.docx)*:
 El presente documento tiene como finalidad explicar a alto nivel cómo funciona la operatoria de pagos QR con Transferencias Inmediatas. Se explicarán las interacciones con los distintos actores del sistema y la descripción de las distintas APIs a invocar en cada punto del proceso.
 
-### 2) Archivo: *Autenticación entre Billeteras y Administrador*:
+### 2) Archivo: *[Autenticación entre Billeteras y Administrador](https://github.com/IPNEWPAY/Billeteras/blob/main/Autenticaci%C3%B3n%20entre%20Billetera%20y%20Administrador.docx)*:
 El presente documento tiene como finalidad explicar cómo debe implementarse la autenticación en los distintos servicios entre la Billetera y el Administrador.
 
 ### 3) Carpeta Swaggers:
