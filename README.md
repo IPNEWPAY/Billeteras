@@ -14,7 +14,7 @@ El presente documento tiene como finalidad explicar a alto nivel cómo funciona 
 ### 2) Archivo: *[Autenticación entre Billeteras y Administrador](https://github.com/IPNEWPAY/Billeteras/blob/main/Autenticaci%C3%B3n%20entre%20Billetera%20y%20Administrador.docx)*:
 El presente documento tiene como finalidad explicar cómo debe implementarse la autenticación en los distintos servicios entre la Billetera y el Administrador.
 
-### 3) Carpeta Swaggers:
+### 3) Carpeta: *[Swaggers](https://github.com/IPNEWPAY/Billeteras/tree/main/swaggers)*
 En esta carpera se encuentra los swaggers de las APIs en formato ".yaml". 
 
 Tambien puedes acceder en linea a las APIs:
