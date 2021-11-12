@@ -49,9 +49,26 @@
         plugins: [
           SwaggerUIBundle.plugins.DownloadUrl
         ],
-        layout: "StandaloneLayout",
-	supportedSubmitMethods:[]
+        layout: "StandaloneLayout"
       });
+      const DisableTryItOutPlugin = function() {
+  return {
+    statePlugins: {
+      spec: {
+        wrapSelectors: {
+          allowTryItOutFor: () => () => false
+        }
+      }
+    }
+  }
+}
+
+// elsewhere, when you call Swagger-UI...
+SwaggerUI({
+  plugins: [
+    DisableTryItOutPlugin
+  ]
+})
       // End Swagger UI call region
 
       window.ui = ui;
