@@ -5,7 +5,7 @@ info:
 security:
   - walletBearerAuth: []
 servers:
-- url: http://client1.com/api
+- url: /
 paths:
 
   /example_wallet/v1/webhook-notification:
