@@ -5,7 +5,7 @@ info:
 security:
   - administratorBearerAuth: []
 servers:
-- url: /
+- url: https://sandbox-newpay.herokuapp.com/
 paths:
 
   /administrator/wallets/v1/payments:
