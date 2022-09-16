@@ -1,11 +1,11 @@
 openapi: 3.0.1
 info:
   title: Administrator APIs for Wallets
-  version: v12-2021
+  version: v08-2022
 security:
   - administratorBearerAuth: []
 servers:
-- url: https://sandbox-newpay.herokuapp.com/
+- url: https://wallet.release.newpay.com.ar
 paths:
 
   /administrator/wallets/v1/payments:
@@ -159,8 +159,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/wallet_transaction_details'
-
-
     instant_payment_wallet_details:
       required:
       - acquirer
@@ -170,6 +168,10 @@ components:
       - qr_raw
       type: object
       properties:
+        administrator:
+          type: string
+          description: Acquirer administrator CUIT (without hyphens) - PRISMA, COELSA, LINK. 
+          example: "30598910045"
         qr_id:
           type: string
           description: QR Unique identifier for a payment
