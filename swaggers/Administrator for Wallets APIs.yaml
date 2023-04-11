@@ -1,0 +1,689 @@
+openapi: 3.0.1
+info:
+  title: Ms-vip-wallet-gateway API
+  version: 1.0.41
+servers:
+  - url: >-
+      http://ab5a38355ad1a4c09b1e930eb307825a-c503670b997b158f.elb.us-east-1.amazonaws.com/wallet-gateway
+    description: Generated server url
+security:
+  - Authorization: []
+paths:
+  /v1/payments:
+    post:
+      tags:
+        - Wallet Gateway Controller
+      summary: Inititate an Instant Payment
+      operationId: payment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: >-
+            Instant Payment processed. Bussiness transaction status could be
+            APPROVED or REJECTED.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WalletResponseDTO'
+        '400':
+          description: Bad request due to syntax errors.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+        '401':
+          description: Invalid client credentials.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+  /v2/payments/{qrId}:
+    get:
+      tags:
+        - Wallet Gateway Controller Version 2
+      summary: transaction status
+      description: Returns a requestPayment Reponse
+      operationId: checkStatus
+      parameters:
+        - name: qrId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: acquirer_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sucess return a WalletDTO objet
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WalletResponseDTO'
+        '400':
+          description: Bad reqeust. Datos inválidos
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WalletResponseDTO'
+        '401':
+          description: Apikey no valida o token vencido o no valido
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WalletResponseDTO'
+        '500':
+          description: Internal Server Error, Exception message
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WalletResponseDTO'
+  /v1/payments/{qr_id}:
+    get:
+      tags:
+        - Wallet Gateway Controller
+      summary: This API returns status and detailed information given a QR_ID
+      description: Returns a Response requestPayment
+      operationId: checkStatus_1
+      parameters:
+        - name: qr_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: acquirer_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WalletTransactionStatusResponseDTO'
+        '400':
+          description: Bad request.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+        '401':
+          description: Invalid client credentials
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorsDTO'
+components:
+  schemas:
+    AccountFromDTO:
+      required:
+        - account
+        - identification_number
+        - name
+      type: object
+      properties:
+        name:
+          pattern: >-
+            [a-zA-Z0-9\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u017F\s\'\.\,\
+            ]{1,255}
+          type: string
+        identification_number:
+          type: string
+        account:
+          $ref: '#/components/schemas/AccountPullDTO'
+      description: Account Information
+    AccountPullDTO:
+      type: object
+      properties:
+        cbu:
+          pattern: '[0-9]{22}'
+          type: string
+          description: CBU number
+        cvu:
+          pattern: '[0-9]{22}'
+          type: string
+          description: CVU number
+    AmountWalletDTO:
+      required:
+        - currency
+        - value
+      type: object
+      properties:
+        value:
+          type: number
+          description: Amount.
+          example: 100.25
+        currency:
+          pattern: '[A-Z]{3}'
+          type: string
+          description: Currency of the Payment.
+          enum:
+            - ARS, USD
+    DocumentDTO:
+      required:
+        - number
+        - type
+      type: object
+      properties:
+        type:
+          pattern: ^(DNI|LE|LC|CUIT|CDI)$
+          type: string
+          description: Document type
+          enum:
+            - DNI, LC, LE, CDI
+        number:
+          pattern: '[0-9]{6,11}'
+          type: string
+          description: Document number
+          example: '3312345659'
+    PushTransferRequestDTO:
+      required:
+        - account_to
+        - amount
+        - channel
+        - type
+        - user
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/AmountWalletDTO'
+        user:
+          $ref: '#/components/schemas/UserPushDTO'
+        account_to:
+          $ref: '#/components/schemas/AccountFromDTO'
+        type:
+          pattern: '[A-Z]{3}'
+          type: string
+          description: Transaction Concept
+        channel:
+          pattern: '[A-Z]{6}'
+          type: string
+          description: Field to establish transfer's channels
+    UserPushDTO:
+      required:
+        - account_from
+        - document
+        - identification_number
+        - name
+        - wallet
+      type: object
+      properties:
+        name:
+          pattern: >-
+            [a-zA-Z0-9\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u017F\s\'\.\,\
+            ]{1,100}
+          type: string
+          description: User Name
+        identification_number:
+          pattern: '[0-9]{11}'
+          type: string
+          description: User Identification Number
+        document:
+          $ref: '#/components/schemas/DocumentDTO'
+        wallet:
+          $ref: '#/components/schemas/WalletDTO'
+        account_from:
+          $ref: '#/components/schemas/AccountPullDTO'
+      description: User Information
+    WalletDTO:
+      required:
+        - cuit
+        - name
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 0
+          type: string
+          description: Wallet name
+          example: MODO
+        cuit:
+          pattern: '[0-9]{11}'
+          type: string
+          description: Identification number - CUIT (without hyphens).
+          example: '22333333339'
+          enum:
+            - range[11, 11]
+        bcra_id:
+          pattern: ^[a-zA-Z\d]{1,5}$
+          type: string
+    PullTransferResponseDTO:
+      required:
+        - amount
+        - transaction
+      type: object
+      properties:
+        amount:
+          type: string
+          description: Transfer amount
+        transaction:
+          type: string
+          description: Transfer information
+    PullTransferRequestDTO:
+      required:
+        - account_from
+        - amount
+        - type
+        - user
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/AmountWalletDTO'
+        user:
+          $ref: '#/components/schemas/UserDTO'
+        account_from:
+          $ref: '#/components/schemas/AccountFromDTO'
+        type:
+          pattern: '[A-Z]{3}'
+          type: string
+          description: Transaction Concept
+    UserDTO:
+      required:
+        - account_to
+        - document
+        - identification_number
+        - name
+        - wallet
+      type: object
+      properties:
+        name:
+          pattern: >-
+            [a-zA-Z0-9\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u017F\s\'\.\,\
+            ]{1,100}
+          type: string
+          description: User Name
+        identification_number:
+          pattern: '[0-9]{11}'
+          type: string
+          description: User Identification Number
+        document:
+          $ref: '#/components/schemas/DocumentDTO'
+        wallet:
+          $ref: '#/components/schemas/WalletDTO'
+        account_to:
+          $ref: '#/components/schemas/AccountPullDTO'
+      description: User Information
+    ResponseDTO:
+      required:
+        - code
+        - description
+      type: object
+      properties:
+        code:
+          type: string
+          description: Code of rejection.
+        description:
+          type: string
+          description: Description of the rejection.
+      description: >-
+        Detailed information about the rejection (only if the transaction is
+        REJECTED)
+    WalletMerchantDTO:
+      required:
+        - cuit
+        - soft_descriptor
+      type: object
+      properties:
+        soft_descriptor:
+          type: string
+          description: Name of the merchant
+        cuit:
+          type: string
+          description: Identification number - CUIT (without hyphens).
+          example: '22333333339'
+          enum:
+            - range[11, 11]
+      description: Detail of the Merchant
+    WalletResponseDTO:
+      required:
+        - amount
+        - qr_id
+      type: object
+      properties:
+        qr_id:
+          type: string
+          description: QR Unique identifier for a payment
+          example: 7f3ae4c2-e00f-4b85-8a08-94764b9f63ff
+        amount:
+          $ref: '#/components/schemas/AmountWalletDTO'
+        merchant:
+          $ref: '#/components/schemas/WalletMerchantDTO'
+        transaction:
+          $ref: '#/components/schemas/WalletTransactionDTO'
+        qr_raw:
+          type: string
+    WalletTransactionDTO:
+      required:
+        - authorization_code
+        - code
+        - datetime
+        - description
+        - gross_amount
+        - transaction_reference_id
+        - type
+      type: object
+      properties:
+        authorization_code:
+          type: string
+          description: >-
+            Authorization code sent to The financials Institutions involved in
+            the transaction.
+        transaction_reference_id:
+          type: string
+          description: Transaction reference informed by acquirer
+        code:
+          type: string
+          description: Response code of the payment
+          enum:
+            - APPROVED , REJECTED
+        description:
+          type: string
+          description: Description of the status code.
+        on_rejection:
+          $ref: '#/components/schemas/ResponseDTO'
+        datetime:
+          type: string
+          description: Date and time of the transaction.
+        type:
+          type: string
+          description: Transaction type (CCT, PCT, DCT, ECT)
+          enum:
+            - CCT, PCT, ECT
+        gross_amount:
+          type: string
+          description: Amount.
+          example: '100.25'
+    ErrorsDTO:
+      required:
+        - errors
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error code
+      description: Array with errors
+    AcquirerRequestDTO:
+      required:
+        - cuit
+      type: object
+      properties:
+        reverse_domain:
+          type: string
+          description: Acquirer reverse domain regarding QR field 41-00.
+          example: com.todopago
+        cuit:
+          pattern: '[0-9]{11}'
+          type: string
+          description: Identification number - CUIT (without hyphens).
+          example: '22333333339'
+          enum:
+            - range[11, 11]
+      description: Acquirer data
+    MerchantDTO:
+      required:
+        - cuit
+        - soft_descriptor
+      type: object
+      properties:
+        soft_descriptor:
+          type: string
+          description: Name of the merchant
+        cuit:
+          type: string
+          description: Identification number - CUIT (without hyphens).
+          example: '22333333339'
+          enum:
+            - range[11, 11]
+      description: Merchant data
+    PayerDTO:
+      required:
+        - document
+        - identification_number
+        - name
+        - wallet
+      type: object
+      properties:
+        name:
+          type: string
+          description: Payer full name
+          example: Juan Perez
+        document:
+          $ref: '#/components/schemas/DocumentDTO'
+        identification_number:
+          type: string
+        wallet:
+          $ref: '#/components/schemas/WalletDTO'
+    WalletRequestDTO:
+      required:
+        - acquirer
+        - amount
+        - payer
+        - qr_id
+        - qr_raw
+      type: object
+      properties:
+        qr_id:
+          maxLength: 64
+          minLength: 0
+          pattern: ^[a-zA-Z\d-]+$
+          type: string
+          description: QR Unique identifier for a payment
+          example: 7f3ae4c2-e00f-4b85-8a08-94764b9f63ff
+        qr_raw:
+          type: string
+          description: QR RAW.
+        amount:
+          $ref: '#/components/schemas/AmountWalletDTO'
+        otp:
+          maxLength: 255
+          minLength: 0
+          pattern: ^[a-zA-Z\d-]+$
+          type: string
+          description: >-
+            Complete with one time password if it is required by the Financial
+            Institution
+        payer:
+          $ref: '#/components/schemas/PayerDTO'
+        acquirer:
+          $ref: '#/components/schemas/AcquirerRequestDTO'
+        merchant:
+          $ref: '#/components/schemas/MerchantDTO'
+        administrator:
+          maxLength: 11
+          minLength: 0
+          pattern: ^[0-9]*$
+          type: string
+    AcquirerMerchantDiscountsDTO:
+      required:
+        - total_discounts
+      type: object
+      properties:
+        total_discounts:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+        withholdings_discounts:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+        tax_perceptions_discounts:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+        merchant_discounts_rate:
+          $ref: '#/components/schemas/MerchantDiscountRateDTO'
+    DataTransactionDTO:
+      required:
+        - authorization_code
+        - code
+        - datetime
+        - description
+        - gross_amount
+        - net_amount
+        - type
+      type: object
+      properties:
+        authorization_code:
+          type: string
+          description: >-
+            Authorization code sent to the Financials Institutions involved in
+            the transaction.
+        transaction_reference_id:
+          type: string
+        code:
+          type: string
+          description: Transaction status code
+          enum:
+            - APPROVED, REJECTED
+        description:
+          type: string
+          description: Description of the status code
+        on_rejection:
+          $ref: '#/components/schemas/ResponseDTO'
+        datetime:
+          type: string
+          description: Date and time of the transaction
+        type:
+          type: string
+          description: Transaction type (CCT, PCT, DCT, ECT)
+          enum:
+            - CCT, PCT, DCT, ECT
+        gross_amount:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+        net_amount:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+        withholdings:
+          $ref: '#/components/schemas/WithholdingsDTO'
+        tax_perceptions:
+          $ref: '#/components/schemas/PerceptionsDTO'
+        transfer_sequence_number:
+          type: string
+        merchant_discounts:
+          $ref: '#/components/schemas/AcquirerMerchantDiscountsDTO'
+      description: 'IMPORTANTE: net_amount NO es utilizado en ms-vip-wallet-gateway'
+    DetailsDTO:
+      required:
+        - amount
+        - code
+        - percentage
+      type: object
+      properties:
+        code:
+          type: string
+          description: Unique identifier of the tax/witholding
+        percentage:
+          type: number
+          description: Percentage applicable
+        amount:
+          type: number
+          description: Amount
+      description: Data related to taxes or witholdings
+    MerchantDiscountRateDTO:
+      type: object
+      properties:
+        percentage_over_gross_amount:
+          type: number
+        iva_percentage:
+          type: number
+        amount:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+        iva_amount:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+        total:
+          $ref: '#/components/schemas/ProcessAmountDTO'
+    PerceptionsDTO:
+      required:
+        - total_amount
+      type: object
+      properties:
+        total_amount:
+          type: number
+          description: Total amount perceptions
+        details:
+          type: array
+          description: Data related to taxes or perception
+          items:
+            $ref: '#/components/schemas/DetailsDTO'
+      description: Perceptions
+    ProcessAmountDTO:
+      required:
+        - currency
+        - value
+      type: object
+      properties:
+        value:
+          type: number
+          description: Amount
+          example: 100.25
+        currency:
+          type: string
+          description: Currency of the Payment
+          enum:
+            - ARS, USD
+    WalletTransactionStatusResponseDTO:
+      required:
+        - amount
+        - merchant
+        - payer
+        - qr_id
+        - transaction
+      type: object
+      properties:
+        qr_id:
+          type: string
+          description: QR Unique identifier for a payment
+          example: 7f3ae4c2-e00f-4b85-8a08-94764b9f63ff
+        amount:
+          $ref: '#/components/schemas/AmountWalletDTO'
+        merchant:
+          $ref: '#/components/schemas/MerchantDTO'
+        payer:
+          $ref: '#/components/schemas/PayerDTO'
+        transaction:
+          $ref: '#/components/schemas/DataTransactionDTO'
+    WithholdingsDTO:
+      required:
+        - total_amount
+      type: object
+      properties:
+        total_amount:
+          type: number
+          description: Total amount witholding
+        details:
+          type: array
+          description: Data related to taxes or witholdings
+          items:
+            $ref: '#/components/schemas/DetailsDTO'
+      description: Witholdings
+  securitySchemes:
+    Authorization:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
