@@ -1,0 +1,430 @@
+openapi: 3.0.1
+info:
+  title: Administrator APIs for Wallets
+  version: v08-2022
+security:
+  - administratorBearerAuth: []
+servers:
+- url: https://wallet.release.newpay.com.ar
+paths:
+
+  /administrator/wallets/v1/payments:
+    post:
+      summary: Initiate an instant payment
+      security:
+      - administratorBearerAuth: []
+      description: This API for wallets enables to initiate a passive payment with QR lecture
+      tags:
+        - Administrator for Wallet APIs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/instant_payment_wallet_details'
+        required: true   
+      responses:
+        200:
+          description: Instant Payment processed. Bussiness transaction status could be APPROVED or REJECTED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/instant_payment_wallet_responses'
+        400:
+          description: Bad request due to syntax errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        401:
+          description: Invalid client credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        403:
+          description: Operacion no autorizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        408:
+          description: Tiempo de espera agotado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        500:
+          description: Error interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+  /administrator/wallets/v2/instant_payments/{qr_id}:
+    get:
+      tags:
+        - Administrator for Wallet APIs
+      summary: This API resturns status and detailed information given a QR_ID
+      security:
+      - administratorBearerAuth: []
+      description: This API resturns status and detailed information given a QR_ID
+      parameters:
+      - name: qr_id
+        in: path
+        description: QR Unique identifier for a payment
+        required: true
+        schema:
+          type: string
+        example: "7f3ae4c2-e00f-4b85-8a08-94764b9f63ff"
+      - name: acquirer_cuit
+        in: query
+        description: Acquirer Identification Number - CUIT
+        required: true
+        schema:
+          type: string
+        example: "2255698745"
+      responses:
+        200:
+          description: Consulta exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/instant_payment_notification_details_v2'
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        401:
+          description: Apikey no valida o token vencido o no valido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        403:
+          description: Operacion no autorizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        404:
+          description: Operacion no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        408:
+          description: Tiempo de espera agotado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        500:
+          description: Error interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'                      
+
+components:
+  schemas:
+    instant_payment_notification_details_v2:
+      description: Representación de un Instant Payment hacia el aceptador
+      required:
+      - qr_id
+      - amount
+      - merchant
+      - payer
+      type: object
+      properties:
+        qr_id:
+          type: string
+          description: Identificador unívoco del QR
+          example: "7f3ae4c2-e00f-4b85-8a08-94764b9f63ff"
+        amount:
+          $ref: '#/components/schemas/amounts'
+        balance:
+          $ref: '#/components/schemas/amounts'
+        merchant:
+          $ref: '#/components/schemas/public_merchants'
+        payer:
+          $ref: '#/components/schemas/public_payers'
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/wallet_transaction_details'
+    instant_payment_wallet_details:
+      required:
+      - acquirer
+      - amount
+      - payer
+      - qr_id
+      - qr_raw
+      type: object
+      properties:
+        administrator:
+          type: string
+          description: Acquirer administrator CUIT (without hyphens) - PRISMA, COELSA, LINK. 
+          example: "30598910045"
+        qr_id:
+          type: string
+          description: QR Unique identifier for a payment
+          example: "7f3ae4c2-e00f-4b85-8a08-94764b9f63ff"
+        qr_raw:
+          type: string
+          description: QR Raw.
+        amount:
+          $ref: '#/components/schemas/amounts'
+        otp:
+          type: string
+          description: Complete with one time password if it is required by the Financial Institution.
+        payer:
+          $ref: '#/components/schemas/payers'          
+        acquirer:
+          $ref: '#/components/schemas/acquirers'
+        merchant:
+          $ref: '#/components/schemas/merchant_account'     
+    public_payers:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Payer full name
+          example: Juan Perez
+        document:
+          $ref: '#/components/schemas/documents'
+        identification_number:
+          type: string
+          description: Identification number - CUIT (without hyphens).
+          minLength: 11
+          maxLength: 11  
+        wallet:
+          required:
+          - cuit
+          - name
+          type: object
+          properties:
+            name:
+              type: string
+              description: Namfe of the wallet
+              example: MODO
+            cuit:
+              $ref: '#/components/schemas/cuit'              
+    instant_payment_wallet_responses:
+      description: Respuesta de un Instant Payment hacia la billetera
+      required:
+      - amount
+      - qr_id
+      type: object
+      properties:
+        qr_id:
+          type: string
+          description: QR Unique identifier for a payment
+          example: "7f3ae4c2-e00f-4b85-8a08-94764b9f63ff"
+        amount:
+          $ref: '#/components/schemas/amounts'
+        merchant:
+          $ref: '#/components/schemas/public_merchants'          
+        transaction:
+          $ref: '#/components/schemas/wallet_transaction_details'          
+    acquirers:
+      required:
+      - cuit
+      type: object
+      properties:
+        reverse_domain:
+          type: string
+          description: Acquirer reverse domain regarding QR field 41-00.
+          example: com.todopago
+        cuit:
+          $ref: '#/components/schemas/cuit'   
+      description: Acquirer data
+    public_merchants:
+      required:
+      - cuit
+      - soft_descriptor
+      type: object
+      properties:
+        soft_descriptor:
+          type: string
+          description: Name of the merchant
+        cuit:
+          $ref: '#/components/schemas/cuit'
+      description: Detail of the Merchant              
+    merchant_account:
+      type: object
+      required:
+        - cuit
+        - account
+      properties:
+        cuit:
+          $ref: '#/components/schemas/cuit' 
+        account:
+          $ref: '#/components/schemas/accounts'   
+    amounts:
+      required:
+      - currency
+      - value
+      type: object
+      properties:
+        value:
+          type: number
+          description: Amount.
+          format: currency
+          example: 100.25
+        currency:
+          type: string
+          description: Currency of the Payment.
+          enum:
+          - ARS
+          - USD      
+    accounts:
+      required:
+      - cbu
+      type: object
+      properties:
+        cbu:
+          type: string
+          description: CBU number
+        cvu:
+          type: string
+          description: CVU number
+    documents:
+      type: object
+      required:
+      - type
+      - number
+      properties:
+        type:
+          type: string
+          description: Document type
+          enum:
+            - DNI
+            - LC
+            - LE
+            - CDI
+        number:
+          type: string
+          description: Document number
+          example: "3312345659"
+    payers:
+      type: object
+      required:
+      - name
+      - identification_number
+      - document
+      - account
+      - wallet
+      properties:
+        name:
+          type: string
+          description: Payer full name
+          example: Juan Perez
+        document:
+          $ref: '#/components/schemas/documents'
+        identification_number:
+          type: string
+          description: Identification number - CUIT (without hyphens).
+          minLength: 11
+          maxLength: 11 
+        account:
+          $ref: '#/components/schemas/accounts'
+        wallet:
+          required:
+          - cuit
+          - name
+          type: object
+          properties:
+            name:
+              type: string
+              description: Wallet name
+              example: MODO
+            cuit:
+              $ref: '#/components/schemas/cuit'
+    wallet_transaction_details:
+      required:
+      - authorization_code
+      - code
+      - datetime
+      - description
+      - gross_amount
+      - type
+      type: object
+      properties:
+        authorization_code:
+          type: string
+          description: Authorization code sent to The financials Institutions involved in the transaction.
+        code:
+          $ref: '#/components/schemas/response_status'
+        description:
+          type: string
+          description: Description of the status code.
+        on_rejection:
+          required:
+          - code
+          - description
+          type: object
+          properties:
+            code:
+              type: string
+              description: Code of rejection.
+            description:
+              type: string
+              description: Description of the rejection.
+          description: Detailed information about the rejection (only if the transaction is REJECTED)
+        datetime:
+          type: string
+          description: Date and time of the transaction.
+          format: date-time
+        type:
+          type: string
+          description: Transaction type (CCT, PCT, DCT, ECT).
+          enum:
+          - CCT
+          - PCT
+          - ECT
+        gross_amount:
+          $ref: '#/components/schemas/amounts'                    
+    
+    cuit:
+      maxLength: 11
+      minLength: 11
+      type: string
+      description: Identification number - CUIT (without hyphens).
+      example: 22333333339
+    errors:
+      required:
+      - errors
+      type: object
+      properties:
+        errors:
+          minItems: 1
+          type: array
+          items:
+            required:
+            - description
+            type: object
+            properties:
+              code:
+                type: string
+                description: Error code
+              description:
+                type: string
+                description: Description of the error code
+    response_status:
+      type: string
+      description: Response code of the payment
+      enum:
+      - APPROVED
+      - REJECTED
+  securitySchemes:
+    administratorBearerAuth:
+      type: http
+      scheme: bearer
+      description: "This API supports the client_credentials flow. You can obtain it by issuing a HTTP POST '/administrator/v1/oauth/token' --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'grant_type=client_credentials' --data-urlencode 'YOUR_CLIENT_ID' --data-urlencode 'client_secret=YOUR_CLIENT_SECRET' --data-urlencode 'scope=read'"       
