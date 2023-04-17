@@ -65,7 +65,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errors'
-  /v2/instant_payments/{qr_id}:
+  /v2/payments/{qr_id}:
     get:
       tags:
         - Administrator for Wallet APIs
