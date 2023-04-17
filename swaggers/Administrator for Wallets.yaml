@@ -8,7 +8,7 @@ servers:
 - url: https://wallet.release.newpay.com.ar
 paths:
 
-  /administrator/wallets/v1/payments:
+  /v1/payments:
     post:
       summary: Initiate an instant payment
       security:
@@ -65,7 +65,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errors'
-  /administrator/wallets/v2/instant_payments/{qr_id}:
+  /v2/instant_payments/{qr_id}:
     get:
       tags:
         - Administrator for Wallet APIs
