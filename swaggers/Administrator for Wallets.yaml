@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Administrator APIs for Wallets
-  version: v08-2022
+  version: v08-2026
 security:
   - administratorBearerAuth: []
 servers:
@@ -81,10 +81,10 @@ paths:
         schema:
           type: string
         example: "7f3ae4c2-e00f-4b85-8a08-94764b9f63ff"
-      - name: acquirer_cuit
+      - name: acquirer_id
         in: query
-        description: Acquirer Identification Number - CUIT
-        required: true
+        description: Acquirer internal identifier
+        required: false
         schema:
           type: string
         example: "2255698745"
@@ -135,7 +135,7 @@ paths:
 components:
   schemas:
     instant_payment_notification_details_v2:
-      description: Representación de un Instant Payment hacia el aceptador
+      description: RepresentaciÃ³n de un Instant Payment hacia el aceptador
       required:
       - qr_id
       - amount
@@ -145,7 +145,7 @@ components:
       properties:
         qr_id:
           type: string
-          description: Identificador unívoco del QR
+          description: Identificador unÃ­voco del QR
           example: "7f3ae4c2-e00f-4b85-8a08-94764b9f63ff"
         amount:
           $ref: '#/components/schemas/amounts'
@@ -308,6 +308,7 @@ components:
             - DNI
             - LC
             - LE
+            - CUIT
             - CDI
         number:
           type: string
@@ -423,6 +424,7 @@ components:
       enum:
       - APPROVED
       - REJECTED
+      - PENDING
   securitySchemes:
     administratorBearerAuth:
       type: http
